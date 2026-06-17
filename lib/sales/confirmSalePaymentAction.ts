@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { logActivity } from "@/lib/activity/logActivity";
 import { requireProfileRole } from "@/lib/auth/requireProfile";
+import { formatPersonName } from "@/lib/format/display";
 import { createSupabaseOperationalServerClient } from "@/lib/supabase/operationalServer";
 import { logSupabaseWarning } from "@/lib/supabase/errors";
 
@@ -57,7 +58,7 @@ export async function confirmSalePaymentAction(formData: FormData) {
     userId: profile.id,
     action: "SALE_PAYMENT_CONFIRMED",
     phoneId: sale.phone_id,
-    description: `Owner confirmed money received for ${phone ? `${phone.brand} ${phone.model} IMEI ${phone.imei}` : `sale ${saleId}`}.`,
+    description: `${formatPersonName(profile.full_name, profile.email, "Owner")} confirmed money received for ${phone ? `${phone.brand} ${phone.model} IMEI ${phone.imei}` : `sale ${saleId}`}.`,
   });
 
   revalidatePath("/dashboard");

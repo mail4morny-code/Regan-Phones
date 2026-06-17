@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { logActivity } from "@/lib/activity/logActivity";
+import { formatPersonName } from "@/lib/format/display";
 import { createSupabaseAppServerClient } from "@/lib/supabase/appServer";
 import { isMissingColumnError } from "@/lib/supabase/errors";
 import type { Database } from "@/lib/supabase/types";
@@ -64,6 +65,13 @@ export async function addPhone(
 
   if (userErr || !user) return { ok: false, error: "Not logged in." };
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, email")
+    .eq("id", user.id)
+    .limit(1)
+    .maybeSingle();
+
   const phoneInsert: PhoneInsert = {
     imei: data.imei,
     brand: data.brand,
@@ -108,7 +116,7 @@ export async function addPhone(
     userId: user.id,
     action: "PHONE_ADDED",
     phoneId: inserted.id,
-    description: `Added phone IMEI ${inserted.imei}`,
+    description: `${formatPersonName(profile?.full_name, profile?.email ?? user.email)} added phone IMEI ${inserted.imei}`,
   });
 
   revalidatePath("/inventory");

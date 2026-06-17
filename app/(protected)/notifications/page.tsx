@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { requireProfileRole } from "@/lib/auth/requireProfile";
 import { formatMoney } from "@/lib/format/currency";
-import { formatActivityAction } from "@/lib/format/display";
+import { formatActivityAction, formatPersonName } from "@/lib/format/display";
 import { timeSince } from "@/lib/format/time";
 import { getNotifications, type DealerAlertPriority } from "@/lib/notifications/getNotifications";
 import { confirmSalePaymentAction } from "@/lib/sales/confirmSalePaymentAction";
@@ -224,7 +224,7 @@ export default async function NotificationsPage({
             <div className="text-sm font-semibold">Money Waiting for Confirmation</div>
             <div className="mt-3 grid gap-3">
               {pendingSaleConfirmations.map((sale) => {
-                const workerName = sale.profiles?.full_name ?? sale.profiles?.email ?? "Worker";
+                const workerName = formatPersonName(sale.profiles?.full_name, sale.profiles?.email);
                 const phoneLabel = sale.phones ? `${sale.phones.brand} ${sale.phones.model} / IMEI ${sale.phones.imei}` : "phone";
                 return (
                   <div key={sale.id} className="rounded-lg border bg-card p-3 text-sm">

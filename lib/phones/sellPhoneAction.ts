@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { logActivity } from "@/lib/activity/logActivity";
 import { requireProfileRole } from "@/lib/auth/requireProfile";
+import { formatPersonName } from "@/lib/format/display";
 import { isMissingColumnError } from "@/lib/supabase/errors";
 import { createSupabaseOperationalServerClient } from "@/lib/supabase/operationalServer";
 import type { Database } from "@/lib/supabase/types";
@@ -96,13 +97,14 @@ export async function sellPhoneAction(
 
   if (updateErr) return { ok: false, error: "Could not mark this phone as sold. Please try again." };
 
+  const actorName = formatPersonName(profile.full_name, profile.email);
   await logActivity({
     userId: profile.id,
     action: isAdminSale ? "PHONE_SOLD" : "PHONE_SOLD_PENDING_CONFIRMATION",
     phoneId: phone.id,
     description: isAdminSale
-      ? `Sold phone IMEI ${imei}. Money received by owner.`
-      : `Worker marked phone IMEI ${imei} as sold. Owner needs to confirm payment.`,
+      ? `${actorName} sold phone IMEI ${imei}. Money received.`
+      : `${actorName} sold phone IMEI ${imei}. Owner needs to confirm payment.`,
   });
 
   revalidatePath("/inventory");

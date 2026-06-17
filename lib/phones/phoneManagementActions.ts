@@ -7,6 +7,7 @@ import { requireProfileRole } from "@/lib/auth/requireProfile";
 import { createSupabaseAppServerClient } from "@/lib/supabase/appServer";
 import type { Database } from "@/lib/supabase/types";
 import { logActivity } from "@/lib/activity/logActivity";
+import { formatPersonName } from "@/lib/format/display";
 import { isMissingColumnError, logSupabaseWarning } from "@/lib/supabase/errors";
 import { createSupabaseOperationalServerClient } from "@/lib/supabase/operationalServer";
 
@@ -97,7 +98,7 @@ export async function editPhoneAction(
     userId: profile.id,
     action: "PHONE_UPDATED",
     phoneId,
-    description: `Updated ${existing.brand} ${existing.model} IMEI ${existing.imei}`,
+    description: `${formatPersonName(profile.full_name, profile.email)} updated ${existing.brand} ${existing.model} IMEI ${existing.imei}`,
   });
 
   revalidatePath("/inventory");
@@ -128,7 +129,7 @@ export async function archivePhoneAction(formData: FormData) {
     userId: profile.id,
     action: "PHONE_ARCHIVED",
     phoneId,
-    description: `Removed from active stock: ${phone?.brand ?? "phone"} ${phone?.model ?? ""} IMEI ${phone?.imei ?? phoneId}`,
+    description: `${formatPersonName(profile.full_name, profile.email)} removed ${phone?.brand ?? "phone"} ${phone?.model ?? ""} IMEI ${phone?.imei ?? phoneId} from active stock`,
   });
 
   revalidatePath("/inventory");
@@ -159,7 +160,7 @@ export async function markPhoneDamagedAction(formData: FormData) {
     userId: profile.id,
     action: "PHONE_DAMAGED",
     phoneId,
-    description: `Marked as damaged: ${phone?.brand ?? "phone"} ${phone?.model ?? ""} IMEI ${phone?.imei ?? phoneId}`,
+    description: `${formatPersonName(profile.full_name, profile.email)} marked ${phone?.brand ?? "phone"} ${phone?.model ?? ""} IMEI ${phone?.imei ?? phoneId} as damaged`,
   });
 
   revalidatePath("/inventory");

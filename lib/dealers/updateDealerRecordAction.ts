@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { logActivity } from "@/lib/activity/logActivity";
 import { requireProfileRole } from "@/lib/auth/requireProfile";
 import { formatMoneyExact } from "@/lib/format/currency";
+import { formatPersonName } from "@/lib/format/display";
 import { isMissingColumnError } from "@/lib/supabase/errors";
 import { createSupabaseOperationalServerClient } from "@/lib/supabase/operationalServer";
 import type { Database } from "@/lib/supabase/types";
@@ -27,6 +28,7 @@ type DealerRecordForUpdate = {
   status: "With Dealer" | "Sold" | "Returned";
   agreed_price: number;
   phones: { imei?: string; cost_price?: number } | Array<{ imei?: string; cost_price?: number }> | null;
+  dealers: { name?: string } | Array<{ name?: string }> | null;
 };
 type SaleInsert = Database["public"]["Tables"]["sales"]["Insert"];
 
@@ -47,7 +49,7 @@ export async function updateDealerRecordAction(
 
   const { data: record, error: recErr } = await supabase
     .from("dealer_records")
-    .select("id, dealer_id, phone_id, status, agreed_price, phones:phone_id(imei, cost_price)")
+    .select("id, dealer_id, phone_id, status, agreed_price, phones:phone_id(imei, cost_price), dealers:dealer_id(name)")
     .eq("id", dealerRecordId)
     .limit(1)
     .maybeSingle();
@@ -69,6 +71,10 @@ export async function updateDealerRecordAction(
   }
 
   const phone = Array.isArray(dealerRecord.phones) ? dealerRecord.phones[0] : dealerRecord.phones;
+  const dealer = Array.isArray(dealerRecord.dealers) ? dealerRecord.dealers[0] : dealerRecord.dealers;
+  const actorName = formatPersonName(profile.full_name, profile.email);
+  const dealerName = dealer?.name ?? "the dealer";
+  const phoneLabel = phone?.imei ?? dealerRecord.phone_id;
   const completedAt = new Date().toISOString();
 
   let updateResult = await supabase
@@ -135,9 +141,9 @@ export async function updateDealerRecordAction(
     description:
       nextStatus === "Sold"
         ? profile.role === "admin"
-          ? `Dealer sold IMEI ${phone?.imei ?? dealerRecord.phone_id}. Owner received ${formatMoneyExact(amountPaid)} of ${formatMoneyExact(dealerRecord.agreed_price)}`
-          : `Worker marked dealer phone IMEI ${phone?.imei ?? dealerRecord.phone_id} as sold. Owner needs to confirm payment.`
-        : `Phone returned to shop: IMEI ${phone?.imei ?? dealerRecord.phone_id}`,
+          ? `${actorName} marked ${dealerName}'s phone IMEI ${phoneLabel} as sold. Money received: ${formatMoneyExact(amountPaid)} of ${formatMoneyExact(dealerRecord.agreed_price)}.`
+          : `${actorName} marked ${dealerName}'s phone IMEI ${phoneLabel} as sold. Owner needs to confirm payment.`
+        : `${actorName} marked ${dealerName}'s phone IMEI ${phoneLabel} as returned to the shop.`,
   });
 
   revalidatePath("/dealer-phones");

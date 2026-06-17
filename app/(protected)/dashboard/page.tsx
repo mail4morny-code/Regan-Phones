@@ -4,7 +4,7 @@ import { ActionButtonCard } from "@/components/ui/ActionButtonCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { requireProfileRole } from "@/lib/auth/requireProfile";
 import { formatMoney } from "@/lib/format/currency";
-import { formatActivityAction } from "@/lib/format/display";
+import { formatActivityAction, formatPersonName } from "@/lib/format/display";
 import { timeSince } from "@/lib/format/time";
 import { getNotifications } from "@/lib/notifications/getNotifications";
 import { confirmSalePaymentAction } from "@/lib/sales/confirmSalePaymentAction";
@@ -100,7 +100,7 @@ export default async function DashboardPage() {
 
         <div className="mt-6 flex flex-col gap-3">
           {isAdmin && pendingSaleConfirmations.map((sale) => {
-            const workerName = sale.profiles?.full_name ?? sale.profiles?.email ?? "Worker";
+            const workerName = formatPersonName(sale.profiles?.full_name, sale.profiles?.email);
             const phoneLabel = sale.phones ? `${sale.phones.brand} ${sale.phones.model} / IMEI ${sale.phones.imei}` : "phone";
             return (
               <div key={sale.id} className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm">

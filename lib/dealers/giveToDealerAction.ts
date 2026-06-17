@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { logActivity } from "@/lib/activity/logActivity";
 import { requireProfileRole } from "@/lib/auth/requireProfile";
 import { formatMoneyExact } from "@/lib/format/currency";
+import { formatPersonName } from "@/lib/format/display";
 import { isMissingColumnError } from "@/lib/supabase/errors";
 import { createSupabaseOperationalServerClient } from "@/lib/supabase/operationalServer";
 
@@ -71,7 +72,7 @@ export async function giveToDealerAction(
       .single();
 
     if (dealerInsertErr || !insertedDealer) {
-      return { ok: false, error: dealerInsertErr?.message || "Could not add this dealer." };
+      return { ok: false, error: "Could not add this dealer. Please try again." };
     }
     dealerId = insertedDealer.id;
   }
@@ -115,7 +116,7 @@ export async function giveToDealerAction(
     action: "PHONE_GIVEN",
     phoneId: phone.id,
     dealerId,
-    description: `Given phone IMEI ${imei} to dealer ${dealerName}. Agreed: ${formatMoneyExact(agreedPrice)}`,
+    description: `${formatPersonName(profile.full_name, profile.email)} gave phone IMEI ${imei} to ${dealerName}. Agreed: ${formatMoneyExact(agreedPrice)}`,
   });
 
   revalidatePath("/inventory");
@@ -183,7 +184,7 @@ export async function giveMultipleToDealerAction(
       .single();
 
     if (dealerInsertErr || !insertedDealer) {
-    return { ok: false, error: dealerInsertErr?.message || "Could not add this dealer." };
+      return { ok: false, error: "Could not add this dealer. Please try again." };
     }
     dealerId = insertedDealer.id;
   }
@@ -246,7 +247,7 @@ export async function giveMultipleToDealerAction(
     userId: profile.id,
     action: "DEALER_BATCH_GIVEN",
     dealerId,
-    description: `Gave ${phones.length} phone${phones.length === 1 ? "" : "s"} to dealer ${dealerName}. Total agreed: ${formatMoneyExact(totalAgreed)}`,
+    description: `${formatPersonName(profile.full_name, profile.email)} gave ${phones.length} phone${phones.length === 1 ? "" : "s"} to ${dealerName}. Total agreed: ${formatMoneyExact(totalAgreed)}`,
   });
 
   revalidatePath("/inventory");

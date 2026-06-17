@@ -67,3 +67,15 @@ export function formatCondition(condition: string | null | undefined) {
   if (condition === "New") return "Brand New";
   return String(condition ?? "Not set");
 }
+
+export function formatPersonName(
+  fullName: string | null | undefined,
+  email?: string | null,
+  fallback = "Staff member"
+) {
+  const name = String(fullName ?? "").trim();
+  if (name) return name;
+  const address = String(email ?? "").trim();
+  if (address) return address;
+  return fallback;
+}

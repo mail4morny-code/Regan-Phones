@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { logActivity } from "@/lib/activity/logActivity";
 import { requireProfileRole } from "@/lib/auth/requireProfile";
+import { formatPersonName } from "@/lib/format/display";
 import { createSupabaseAppServerClient } from "@/lib/supabase/appServer";
 import { isMissingColumnError, logSupabaseWarning } from "@/lib/supabase/errors";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/serviceRole";
@@ -84,7 +85,7 @@ export async function createWorkerAction(
   await logActivity({
     userId: admin.id,
     action: "WORKER_CREATED",
-    description: `Added worker ${fullName} (${email})`,
+    description: `${formatPersonName(admin.full_name, admin.email, "Owner")} added ${fullName} (${email})`,
   });
 
   revalidatePath("/workers");
@@ -122,7 +123,7 @@ export async function toggleWorkerActiveAction(formData: FormData) {
   await logActivity({
     userId: admin.id,
     action: nextActive ? "WORKER_ENABLED" : "WORKER_DISABLED",
-    description: `${nextActive ? "Enabled" : "Disabled"} worker ${worker?.full_name ?? worker?.email ?? workerId}`,
+    description: `${formatPersonName(admin.full_name, admin.email, "Owner")} ${nextActive ? "enabled" : "disabled"} ${worker?.full_name ?? worker?.email ?? workerId}`,
   });
 
   revalidatePath("/workers");
