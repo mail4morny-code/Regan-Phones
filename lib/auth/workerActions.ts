@@ -129,3 +129,69 @@ export async function toggleWorkerActiveAction(formData: FormData) {
   revalidatePath("/workers");
   revalidatePath("/notifications");
 }
+
+export async function resetWorkerPasswordAction(
+  prevState: unknown,
+  formData: FormData
+): Promise<WorkerActionState> {
+  const admin = await requireProfileRole(["admin"]);
+  const workerId = String(formData.get("worker_id") ?? "").trim();
+  const temporaryPassword = String(formData.get("temporary_password") ?? "");
+
+  if (!workerId) return { ok: false, error: "Choose a worker first." };
+  if (temporaryPassword.length < 8) {
+    return { ok: false, error: "Temporary password must be at least 8 characters." };
+  }
+
+  const supabase = await createSupabaseAppServerClient();
+  const { data: worker, error: workerErr } = await supabase
+    .from("profiles")
+    .select("email, full_name")
+    .eq("id", workerId)
+    .eq("role", "worker")
+    .limit(1)
+    .maybeSingle();
+
+  if (workerErr || !worker) {
+    return { ok: false, error: "Worker account not found." };
+  }
+
+  let service;
+  try {
+    service = createSupabaseServiceRoleClient();
+  } catch {
+    return {
+      ok: false,
+      error: "Worker password reset is not configured on this server. Add the service role key, restart the app, then try again.",
+    };
+  }
+
+  const { data: authUserResult } = await service.auth.admin.getUserById(workerId);
+  const currentMetadata = authUserResult.user?.user_metadata ?? {};
+  const { error: resetErr } = await service.auth.admin.updateUserById(workerId, {
+    password: temporaryPassword,
+    user_metadata: {
+      ...currentMetadata,
+      must_change_password: true,
+    },
+  });
+
+  if (resetErr) {
+    return { ok: false, error: "Could not reset this worker password. Please try again." };
+  }
+
+  const workerName = formatPersonName(worker.full_name, worker.email, "this worker");
+  await logActivity({
+    userId: admin.id,
+    action: "WORKER_PASSWORD_RESET",
+    description: `${formatPersonName(admin.full_name, admin.email, "Owner")} reset password for ${workerName}`,
+  });
+
+  revalidatePath("/workers");
+  revalidatePath("/notifications");
+
+  return {
+    ok: true,
+    message: `Password reset for ${workerName}. Share the temporary password and ask them to change it in Settings.`,
+  };
+}

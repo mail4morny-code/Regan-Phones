@@ -1,6 +1,7 @@
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { WorkerForm } from "@/components/workers/WorkerForm";
+import { WorkerPasswordResetForm } from "@/components/workers/WorkerPasswordResetForm";
 import { requireProfileRole } from "@/lib/auth/requireProfile";
 import { toggleWorkerActiveAction } from "@/lib/auth/workerActions";
 import { formatRole } from "@/lib/format/display";
@@ -70,7 +71,11 @@ export default async function WorkersPage() {
                 <div>Access: <span className="font-semibold text-foreground">{formatRole(w.role)}</span></div>
                 <div>Added {new Date(w.created_at).toLocaleDateString("en-GB")}</div>
               </div>
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex flex-col gap-3">
+                <WorkerPasswordResetForm
+                  workerId={w.id}
+                  workerName={w.full_name ?? w.email ?? "this worker"}
+                />
                 <form action={toggleWorkerActiveAction}>
                   <input type="hidden" name="worker_id" value={w.id} />
                   <input type="hidden" name="next_active" value={String(!w.is_active)} />

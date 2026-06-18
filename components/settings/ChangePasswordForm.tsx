@@ -28,7 +28,10 @@ export function ChangePasswordForm() {
     }
 
     setLoading(true);
-    const { error: updateErr } = await supabaseBrowser.auth.updateUser({ password });
+    const { error: updateErr } = await supabaseBrowser.auth.updateUser({
+      password,
+      data: { must_change_password: false },
+    });
     setLoading(false);
 
     if (updateErr) {
@@ -38,7 +41,7 @@ export function ChangePasswordForm() {
 
     setPassword("");
     setConfirmPassword("");
-    setMessage("Password updated.");
+    setMessage("Password Updated.");
   }
 
   return (

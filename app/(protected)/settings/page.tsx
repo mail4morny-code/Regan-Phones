@@ -31,7 +31,7 @@ export default async function SettingsPage() {
       <section className="rounded-2xl border border-black/5 bg-card p-4 shadow-sm sm:p-6 md:p-8">
         <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">Password</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-          Workers should change their temporary password after first login.
+          Change your password anytime. Workers should replace temporary passwords after the first login.
         </p>
         <ChangePasswordForm />
       </section>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -61,6 +62,9 @@ export function LoginForm() {
           className="h-11 rounded-lg border bg-background px-3"
         />
       </label>
+      <Link href="/forgot-password" className="w-fit text-sm font-medium underline underline-offset-4">
+        Forgot password?
+      </Link>
 
       {error ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">

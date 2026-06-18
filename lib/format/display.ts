@@ -13,6 +13,7 @@ const actionLabels: Record<string, string> = {
   WORKER_CREATED: "Worker Added",
   WORKER_ENABLED: "Worker Enabled",
   WORKER_DISABLED: "Worker Disabled",
+  WORKER_PASSWORD_RESET: "Worker Password Reset",
 };
 
 const statusLabels: Record<string, string> = {
