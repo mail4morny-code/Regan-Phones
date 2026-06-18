@@ -15,16 +15,22 @@ export async function proxy(req: NextRequest) {
 
   const { data } = await supabase.auth.getUser();
   const user = data.user;
-  const isPublicRoute = pathname.startsWith("/login") || pathname.startsWith("/signup");
+  const isAuthRoute =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password");
+  const isPasswordResetRoute =
+    pathname.startsWith("/forgot-password") || pathname.startsWith("/reset-password");
 
-  if (!isPublicRoute && !user) {
+  if (!isAuthRoute && !user) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }
 
-  if (isPublicRoute && user) {
+  if (isAuthRoute && user && !isPasswordResetRoute) {
     const url = req.nextUrl.clone();
     url.pathname = "/dashboard";
     url.search = "";
